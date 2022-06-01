@@ -8,14 +8,14 @@
 typedef embed_t* Language__Eforth;
 
 /* TODO instead target some perl something? or just Capture::Tiny */
-int put_char(int ch, void *file)
+static int put_char(int ch, void *file)
 {
     int ret = fputc(ch, file);
     fflush(file);
     return ret;
 }
 
-MODULE = Language::Eforth		PACKAGE = Language::Eforth		
+MODULE = Language::Eforth        PACKAGE = Language::Eforth        
 PROTOTYPES: ENABLE
 
 void
@@ -29,13 +29,33 @@ depth(Language::Eforth self)
     CODE:
         RETVAL = embed_depth(self);
     OUTPUT:
-    	RETVAL
+        RETVAL
 
-# NOTE the string MUST end with a newline
+# utility bloat
+void
+drain(Language::Eforth self)
+    PREINIT:
+        cell_t value;
+        size_t depth, ss;
+    PPCODE:
+        depth = embed_depth(self);
+        if (depth) {
+            EXTEND(SP, ss = depth);
+            while (depth) {
+                embed_pop(self, &value);
+                mPUSHu(value);
+                depth--;
+            }
+            XSRETURN(ss);
+        } else {
+            XSRETURN(0);
+        }
+
+# NOTE the expression MUST end with a newline
 void
 eval(Language::Eforth self, SV *expr)
     CODE:
-        if (!SvOK(expr) || !SvCUR(expr))
+        if (!(SvOK(expr) && SvCUR(expr)))
             croak("invalid empty expression");
         embed_eval(self, (char *)SvPV_nolen(expr));
 
@@ -59,39 +79,47 @@ new( const char *class )
         embed_eval(self, "\n");
         RETVAL = self;
     OUTPUT:
-    	RETVAL
+        RETVAL
 
 void
 pop(Language::Eforth self)
     PREINIT:
         cell_t value;
-        int ret;
+        int status;
         U8 gimme;
     PPCODE:
-        ret = embed_pop(self, &value);
+        status = embed_pop(self, &value);
         gimme = GIMME_V;
         if (gimme == G_VOID) {
             XSRETURN(0);
         } else if (gimme == G_SCALAR) {
-            ST(0) = newSViv(value);
-            sv_2mortal(ST(0));
+            EXTEND(SP, 1);
+            mPUSHu(value);
             XSRETURN(1);
         } else {
-            ST(0) = newSViv(value);
-            sv_2mortal(ST(0));
-            ST(1) = newSViv(ret);
-            sv_2mortal(ST(1));
+            EXTEND(SP, 2);
+            mPUSHu(value);
+            mPUSHi(status);
             XSRETURN(2);
         }
 
-UV
-push(Language::Eforth self, SV *value)
-    CODE:
-        if (!SvOK(value) || !SvIOK(value))
-            croak("value must be an integer");
-        RETVAL = embed_push(self, SvIV(value));
-    OUTPUT:
-    	RETVAL
+void
+push(Language::Eforth self, ...)
+    PREINIT:
+        int i, status;
+        SV *value;
+    PPCODE:
+        if (items < 2) croak("nothing to push");
+        for (i = 1; i < items; i++) {
+            value = ST(i);
+            if (!SvOK(value)) croak("value must be defined");
+            status = embed_push(self, SvUV(value));
+            if (status) break;
+        }
+        EXTEND(SP, 2);
+        mPUSHi(i - 1);
+        mPUSHi(status);
+        XSRETURN(2);
 
 void
 reset(Language::Eforth self)

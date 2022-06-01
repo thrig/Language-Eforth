@@ -8,14 +8,15 @@ https://github.com/howerj/embed
 INSTALLATION
 
 To install this module, run the following commands. In particular, the
-files embed.c, embde.h, and image.c must first be copied from the embed
+files embed.c, embed.h, and image.c must first be copied from the embed
 repository into the src directory of this module:
 
-  here=`pwd`
-  cd somewhere
+  cpanm --look Language::Eforth
   git clone https://github.com/howerj/embed
-  cp embed/{embed.[ch],image.c} "$here"/src
-  cd "$here"
+  mkdir src
+  cp embed/embed.c src
+  cp embed/embed.h src
+  cp embed/image.c src
   perl Build.PL
   ./Build
   ./Build test
@@ -27,7 +28,7 @@ SUPPORT AND DOCUMENTATION
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc Language::Eforth
+  perldoc Language::Eforth
 
 
 LICENSE AND COPYRIGHT

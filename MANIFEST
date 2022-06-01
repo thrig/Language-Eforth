@@ -2,7 +2,10 @@ Build.PL
 Changes
 LICENSE
 MANIFEST
+META.json
+META.yml
 README
+eg/shape
 lib/Language/Eforth.pm
 lib/Language/Eforth.xs
 lib/Language/typemap

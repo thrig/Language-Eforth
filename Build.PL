@@ -1,15 +1,24 @@
 #!perl
 #
 # build script for Language::Eforth, see the README file for details
-#
-# TODO figure out Alien::Build and write an Alien::Eforth to (try to)
-# install that? in the meantime see the README for what to copy from the
-# embed repository into the src directory
 
 use strict;
 use warnings;
 use Module::Build;
 Module::Build->VERSION('0.4004');
+
+# TODO figure out Alien::Build and write an Alien::Eforth to (try to)
+# install that? in the meantime see the README for what to copy from
+# the embed repository into the src directory. I guess you could
+# randomly pull down stuff from github, which is a less horrible
+# version of `curl ... | sh`
+for my $file (qw[embed.c embed.h image.c]) {
+    if ( !-f "src/$file" ) {
+        print "  src/$file is missing\n";
+        print "No automated install, see the README for details\n";
+        exit 0;
+    }
+}
 
 my $builder = Module::Build->new(
     module_name       => 'Language::Eforth',
