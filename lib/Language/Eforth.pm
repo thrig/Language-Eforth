@@ -27,7 +27,7 @@ Language::Eforth - a tiny embedded Forth interpreter
 =head1 SYNOPSIS
 
   use Language::Eforth;
-  my $f = Language::Eforth->new;
+  our $f = Language::Eforth->new;
 
   $f->eval("2 2 + .s\n");
   print scalar $f->pop, "\n";
@@ -182,6 +182,45 @@ B<embed_push> expects a C<uint16_t> argument.
 Since version 0.02.
 
 =back
+
+=head1 FORTH TIPS
+
+Read C<embed.fth>. The C<words> word can be used to print the available
+words. Some of these words may be of little use as they will operate in
+strange ways due to their being run under B<embed_eval> and not the full
+B<embed_vm>.
+
+  $f->eval("words\n");
+
+Changing C<base> can cause confusion, or worse. It may help to pull
+the values out to Perl for inspection, or to not change the base if
+you can avoid it.
+
+  $f->push( 0xA, 0xB );
+  $f->eval(<<'EOF');
+  hex .s          \ stack: A B
+  2 base !        \ change base to binary
+  10 11 .s        \ stack: 1010 1011 10 11
+  1010 base !     \ change base to decimal
+  .s              \ stack: 10 11 2 3
+  $10             \ hex, regardless of base
+  EOF
+  print "@{[$f->drain]}\n";    # 16 3 2 11 10
+
+C<key> is an example of a problematic word; it reads a character
+usually from a terminal or other input device, similar to L<getc(3)>.
+Under this module C<key> instead reads from the string passed to the
+B<eval> method:
+
+  $f->eval(<<'EOF');
+  key
+  *
+  .s              \ stack: 42
+  EOF
+
+C<key> and similar words might best be left unused in this module.
+External forth code that relies on them will need to be ported to run
+under this module.
 
 =head1 SEE ALSO
 

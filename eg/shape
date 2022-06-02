@@ -12,15 +12,17 @@ $f->eval(<<'AND_NOW_FOR_SOMETHING_COMPETELY_DIFFERENT');
 
 : it's . . . ;
 
-: CSI   27 emit 91 emit ;   \ Control Sequence Introductor
-: home  CSI 49 emit 59 emit 49 emit 72 emit ;
-: clear CSI 50 emit 74 emit ;
+: ASCII bl word 1+ c@ [compile] literal ; immediate
+: ESC   27 emit ;
+: CSI   ESC ASCII [ emit ;  \ Control Sequence Introductor
+: home  CSI ." 1;1H" ;
+: clear CSI ." 2J" ;
 : page  home clear ;
 : 2*    1 lshift ;          \ not a lot is defined in image.c
 
 \ drawing tools
-: dot   32 emit ;           \ this was 46 at some point
-: star  42 emit ;
+: dot   bl emit ;           \ this was 46 at some point
+: star  ASCII * emit ;
 : row   ( c -- )            \ accept a character on the stack
   7 for                     \ *eight* times ( yay fencepost! )
     dup 128 and             \ dup "c", mask with 0b10000000 and then
