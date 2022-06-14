@@ -1,8 +1,5 @@
-#!perl
-#
+: use strict;
 # build script for Language::Eforth, see the README file for details
-
-use strict;
 use warnings;
 use Module::Build;
 Module::Build->VERSION('0.4004');
