@@ -75,7 +75,9 @@ new( const char *class )
         opts.put     = put_char;
         opts.options = 0;
         self->o      = opts;
-        /* KLUGE prime the engine so push works from the get-go */
+        /* KLUGE prime the engine so push works from the get-go:
+         * https://github.com/howerj/embed/issues/10
+         */
         embed_eval(self, "\n");
         RETVAL = self;
     OUTPUT:
