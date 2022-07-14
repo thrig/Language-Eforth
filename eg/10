@@ -1,0 +1,38 @@
+#!/usr/bin/env perl
+#
+# 10 - add 10 to the stack in base 2, 8, 10, and 16
+
+use 5.32.0;
+use warnings;
+use experimental 'signatures';
+use Carp 'croak';
+use Language::Eforth;
+our $f = Language::Eforth->new;
+
+my $base = 10;
+for my $newbase (qw(2 8 10 16)) {
+    my $enc = inbase( $newbase, $base );
+    $f->eval("$enc base !\n10\n");
+    $base = $newbase;
+}
+# back to base 10 - embed supports $hexnumber for literal input,
+# probably better than the inbase conversion (but less educational)
+$f->eval( '$A base !' . " .s\n" );
+
+# this could also be done with an "alphabet", see Number::AnyBase; ANS
+# FORTH and Common LISP however restrict the base to 2..36
+sub inbase ( $n, $base = 10 ) {
+    croak "N must be positive"              if $n < 0;
+    croak "base must be in the range 2..36" if $base < 2 or $base > 36;
+    return $n                               if $base == 10;
+    my $str = '';
+    while (1) {
+        my $mod = $n % $base;
+        $n = int( $n / $base );
+        # PORTABILITY not everything uses ASCII
+        $mod = chr( 55 + $mod ) if $mod > 9;
+        $str = $mod . $str;
+        last if $n == 0;
+    }
+    return $str;
+}

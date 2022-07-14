@@ -5,6 +5,7 @@ MANIFEST
 META.json
 META.yml
 README
+eg/10
 eg/shape
 lib/Language/Eforth.pm
 lib/Language/Eforth.xs
