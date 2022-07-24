@@ -1,2 +1,5 @@
 ppport.h linguist-vendored
 *.t linguist-language=Perl
+src/embed.c linguist-vendored
+src/embed.h linguist-vendored
+src/image.c linguist-vendored
